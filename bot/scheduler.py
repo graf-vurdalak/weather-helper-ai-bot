@@ -40,7 +40,7 @@ async def run_scheduler():
                 scheduler.add_job(
                     send_daily_weather,
                     'cron',
-                    hour=9,
+                    hour=8,
                     minute=0,
                     kwargs={'user_id': user_id, 'city': city},
                     timezone=timezone_str,
