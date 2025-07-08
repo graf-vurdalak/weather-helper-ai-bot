@@ -21,6 +21,7 @@ class Database:
                     city TEXT DEFAULT 'Москва',
                     send_daily BOOLEAN DEFAULT FALSE,
                     timezone TEXT DEFAULT 'Europe/Moscow',
+                    timezone_offset INT DEFAULT 10800,                  
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 );
 
@@ -65,13 +66,13 @@ class Database:
             logger.error(f"Error getting user: {e}")
             raise
 
-    def update_city(self, user_id: int, city: str) -> bool:
+    def update_city(self, user_id: int, city: str, timezone: int) -> bool:
         """Update user's city"""
         try:
             with self.conn:
                 self.cursor.execute(
-                    "UPDATE users SET city = ? WHERE user_id = ?",
-                    (city, user_id)
+                    "UPDATE users SET city = ?, timezone_offset = ? WHERE user_id = ?",
+                    (city, timezone, user_id)
                 )
                 return self.cursor.rowcount > 0
         except sqlite3.Error as e:
@@ -107,13 +108,25 @@ class Database:
             logger.error(f"Error adding weather record: {e}")
             raise
 
+    def get_user_timezone(self, user_id: int) -> int:
+        """Возвращает часовой пояс пользователя в формате 'Europe/Moscow'."""
+        try:
+           self.cursor.execute(
+               "SELECT timezone_offset FROM users WHERE user_id = ?", (user_id,)
+           )
+           return [(row['timezone_offset']) for row in self.cursor.fetchall()]
+        
+        except sqlite3.Error as e:
+            logger.error(f"Error getting users for notifications: {e}")
+            raise
+
     def get_users_for_notifications(self) -> List[Tuple[int, str]]:
         """Get users who enabled daily notifications"""
         try:
             self.cursor.execute(
-                "SELECT user_id, city FROM users WHERE send_daily = TRUE"
+                "SELECT user_id, city, timezone_offset FROM users WHERE send_daily = TRUE"
             )
-            return [(row['user_id'], row['city']) for row in self.cursor.fetchall()]
+            return [(row['user_id'], row['city'], row['timezone_offset']) for row in self.cursor.fetchall()]
         except sqlite3.Error as e:
             logger.error(f"Error getting users for notifications: {e}")
             raise

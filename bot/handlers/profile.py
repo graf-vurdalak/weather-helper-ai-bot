@@ -20,7 +20,7 @@ async def profile_callback(callback: CallbackQuery):
         f"├ Имя: {user['username']}\n"
         f"├ Город: {user['city']}\n"
         f"├ Автопогода: {status}\n"
-        f"└ Часовой пояс: {user['timezone']}"
+        f"└ Часовой пояс: UTC{user['timezone_offset']//3600:+d}"
     )
     await callback.message.answer(text, parse_mode="HTML")
 

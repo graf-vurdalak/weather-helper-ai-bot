@@ -29,7 +29,8 @@ class WeatherService:
 
             temp = data['main']['temp']
             condition = data['weather'][0]['description']
-            return temp, condition
+            timezone = data['timezone']
+            return temp, condition, timezone
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Request error: {e}")
